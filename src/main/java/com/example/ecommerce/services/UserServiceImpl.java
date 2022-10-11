@@ -5,36 +5,37 @@ import com.example.ecommerce.model.User;
 import com.example.ecommerce.repository.RoleRepository;
 import com.example.ecommerce.repository.UserRepository;
 import com.example.ecommerce.security.UserDetailsImpl;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 @Service
-@RequiredArgsConstructor
 @Transactional
 @Slf4j
-public class UserServiceImpl implements UserService, UserDetailsService {
+@AllArgsConstructor
+public class UserServiceImpl implements UserService {
+
+
 
     private final UserRepository userRepo;
+
     private final RoleRepository roleRepo;
+
+    private final BCryptPasswordEncoder passwordEncoder;
     //UserDetailsService Override
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepo.findByUsername(username);
-        if(user == null){
-            log.error("User not found");
-            throw new UsernameNotFoundException("User not Found in database");
-        }
-        return UserDetailsImpl.create(user);
-    }
+
 
     @Override
     public User saveUser(User user) {
         log.info("Saving user to the database {}",user.getUsername());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepo.save(user);
     }
 
